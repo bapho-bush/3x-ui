@@ -1,15 +1,15 @@
 # ========================================================
 # Stage: Builder
 # ========================================================
-FROM golang:1.22-alpine AS builder
+FROM golang:latest AS builder
 WORKDIR /app
 ARG TARGETARCH
 
-RUN apk --no-cache --update add \
-  build-base \
+RUN apt update -y
+RUN apt install \
   gcc \
   wget \
-  unzip
+  unzip -y
 
 COPY . .
 
@@ -21,15 +21,15 @@ RUN ./DockerInit.sh "$TARGETARCH"
 # ========================================================
 # Stage: Final Image of 3x-ui
 # ========================================================
-FROM alpine
-ENV TZ=Asia/Tehran
+FROM builder
+ENV TZ=Europe/Moscow
 WORKDIR /app
 
-RUN apk add --no-cache --update \
+RUN apt update -y
+RUN apt install \
   ca-certificates \
   tzdata \
-  fail2ban \
-  bash
+  fail2ban -y
 
 COPY --from=builder /app/build/ /app/
 COPY --from=builder /app/DockerEntrypoint.sh /app/
